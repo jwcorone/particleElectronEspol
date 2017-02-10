@@ -1,8 +1,9 @@
+
 // This #include statement was automatically added by the Particle IDE.
 #include "AssetTracker/AssetTracker.h"
 
 unsigned long myChannelNumber = 147034;
-const char * myWriteAPIKey = "YXWEEEBCJM9AZUKB";
+const char * myWriteAPIKey = "3YI8VHE4ZVNTIRX8";
 char data[320];
 
 #define publish_delay 16000
@@ -14,7 +15,7 @@ unsigned int downBattery = 1;
 // Threshold to trigger a publish
 // 9000 is VERY sensitive, 12000 will still detect small bumps
 int accelThreshold = 9500;
-
+String cod="";
 // Creating an AssetTracker named 't' for us to reference
 AssetTracker t = AssetTracker();
 int x;
@@ -33,14 +34,17 @@ void setup() {
     x=0;
     // Opens up a Serial port so you can listen over USB
     Serial.begin(9600);
-    
+    Serial1.begin(9600);
     // These three functions are useful for remote diagnostics. Read more below.
     /*Particle.function("tmode", transmitMode);*/
     Particle.function("batt", batteryStatus);
     Particle.function("aThresh",accelThresholder);
     Particle.function("gps", gpsPublish);
+    pinMode(D7,OUTPUT);
     /*ThingSpeak.begin(client);
     Particle.subscribe("hook-response/get_thingSpeakWrite_", myHandler, MY_DEVICES);*/
+    digitalWrite(D7,LOW);
+    Serial1.write("HOLA MUNDO");
 }
 
 void loop() {
@@ -67,6 +71,18 @@ void loop() {
         ++x;
         Particle.publish("thingSpeakWrite_A0", "{\"k\":\"YXWEEEBCJM9AZUKB\", \"1\":\""+String(lati)+"\", \"2\":\""+String(longi)+"\", \"3\":\"1\", \"4\":\""+String(t.readX())+"\", \"a\":\""+String(lati)+"\", \"o\":\""+String(longi)+"\"}", 60, PRIVATE);
     }
+    while (Serial.available())
+    {
+        char c = Serial.read();
+        cod=cod+String(c);
+        Serial1.write(c);
+    }
+    
+    if(cod.equals("eyJpdiI6ImIxNHJkaFhrUk5SZlFOVDlHdkt6akE9PSIsInZhbHVlIjoiMDhna0hwdFR0ejN2S3VRZjhmVXN2Zz09IiwibWFjIjoiOWY5YjcwZWVjNmFmN2RjZmEyYzMzMjY3N2FhYzQwNmFhYzFiNTlhY2MyOTFjY2M0YTY4M2M1YTU5MjY2NzRhZCJ9"))
+        digitalWrite(D7,HIGH);
+    else
+        digitalWrite(D7,LOW);
+    cod="";
     lastPublish = now;
 }
 // Remotely change the trigger threshold!
